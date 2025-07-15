@@ -48,6 +48,9 @@ var (
 		{Group: "apps", Kind: "ReplicaSet"}: {
 			TemplatePath: []string{"spec", "template"}, SelectorPath: []string{"spec", "selector"},
 		},
+		{Group: "apps", Kind: "StatefulSet"}: {
+			TemplatePath: []string{"spec", "template"}, SelectorPath: []string{"spec", "selector"},
+		},
 	}
 )
 

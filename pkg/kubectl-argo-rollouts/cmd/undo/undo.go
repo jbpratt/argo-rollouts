@@ -126,6 +126,8 @@ func undoWorkloadRef(c kubernetes.Interface, rollout *v1alpha1.Rollout, patchTyp
 		_, err = c.AppsV1().Deployments(namespace).Patch(context.TODO(), refName, patchType, patch, metav1.PatchOptions{})
 	case "ReplicaSet":
 		_, err = c.AppsV1().ReplicaSets(namespace).Patch(context.TODO(), refName, patchType, patch, metav1.PatchOptions{})
+	case "StatefulSet":
+		_, err = c.AppsV1().StatefulSets(namespace).Patch(context.TODO(), refName, patchType, patch, metav1.PatchOptions{})
 	case "PodTemplate":
 		_, err = c.CoreV1().PodTemplates(namespace).Patch(context.TODO(), refName, patchType, patch, metav1.PatchOptions{})
 	default:

@@ -23,7 +23,7 @@ func NewRolloutInfo(
 	allPods []*corev1.Pod,
 	allExperiments []*v1alpha1.Experiment,
 	allARs []*v1alpha1.AnalysisRun,
-	workloadRef *appsv1.Deployment,
+	workloadRef interface{},
 ) *rollout.RolloutInfo {
 
 	roInfo := rollout.RolloutInfo{
@@ -87,8 +87,17 @@ func NewRolloutInfo(
 	var containerList []corev1.Container
 	var initContainerList []corev1.Container
 	if workloadRef != nil {
-		containerList = workloadRef.Spec.Template.Spec.Containers
-		initContainerList = workloadRef.Spec.Template.Spec.InitContainers
+		switch ref := workloadRef.(type) {
+		case *appsv1.Deployment:
+			containerList = ref.Spec.Template.Spec.Containers
+			initContainerList = ref.Spec.Template.Spec.InitContainers
+		case *appsv1.StatefulSet:
+			containerList = ref.Spec.Template.Spec.Containers
+			initContainerList = ref.Spec.Template.Spec.InitContainers
+		default:
+			containerList = ro.Spec.Template.Spec.Containers
+			initContainerList = ro.Spec.Template.Spec.InitContainers
+		}
 	} else {
 		containerList = ro.Spec.Template.Spec.Containers
 		initContainerList = ro.Spec.Template.Spec.InitContainers

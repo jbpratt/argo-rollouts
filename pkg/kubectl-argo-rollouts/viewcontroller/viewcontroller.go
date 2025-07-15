@@ -2,6 +2,7 @@ package viewcontroller
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sync"
 	"time"
@@ -9,7 +10,6 @@ import (
 	"github.com/argoproj/argo-rollouts/utils/queue"
 
 	log "github.com/sirupsen/logrus"
-	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kubeinformers "k8s.io/client-go/informers"
@@ -41,6 +41,7 @@ type viewController struct {
 	experimentLister  rolloutlisters.ExperimentNamespaceLister
 	analysisRunLister rolloutlisters.AnalysisRunNamespaceLister
 	deploymentLister  appslisters.DeploymentNamespaceLister
+	statefulSetLister appslisters.StatefulSetNamespaceLister
 
 	cacheSyncs []cache.InformerSynced
 
@@ -105,6 +106,7 @@ func newViewController(namespace string, name string, kubeClient kubernetes.Inte
 		experimentLister:        rolloutsInformerFactory.Argoproj().V1alpha1().Experiments().Lister().Experiments(namespace),
 		analysisRunLister:       rolloutsInformerFactory.Argoproj().V1alpha1().AnalysisRuns().Lister().AnalysisRuns(namespace),
 		deploymentLister:        kubeInformerFactory.Apps().V1().Deployments().Lister().Deployments(namespace),
+		statefulSetLister:       kubeInformerFactory.Apps().V1().StatefulSets().Lister().StatefulSets(namespace),
 		workqueue:               workqueue.NewRateLimitingQueue(queue.DefaultArgoRolloutsRateLimiter()),
 	}
 
@@ -213,9 +215,16 @@ func (c *RolloutViewController) GetRolloutInfo() (*rollout.RolloutInfo, error) {
 		return nil, err
 	}
 
-	var workloadRef *v1.Deployment
+	var workloadRef interface{}
 	if ro.Spec.WorkloadRef != nil {
-		workloadRef, err = c.deploymentLister.Get(ro.Spec.WorkloadRef.Name)
+		switch ro.Spec.WorkloadRef.Kind {
+		case "Deployment":
+			workloadRef, err = c.deploymentLister.Get(ro.Spec.WorkloadRef.Name)
+		case "StatefulSet":
+			workloadRef, err = c.statefulSetLister.Get(ro.Spec.WorkloadRef.Name)
+		default:
+			return nil, fmt.Errorf("unsupported workload reference kind: %s", ro.Spec.WorkloadRef.Kind)
+		}
 		if err != nil {
 			return nil, err
 		}

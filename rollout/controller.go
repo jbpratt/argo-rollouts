@@ -102,6 +102,7 @@ type ControllerConfig struct {
 	AnalysisTemplateInformer        informers.AnalysisTemplateInformer
 	ClusterAnalysisTemplateInformer informers.ClusterAnalysisTemplateInformer
 	ReplicaSetInformer              appsinformers.ReplicaSetInformer
+	StatefulSetInformer             appsinformers.StatefulSetInformer
 	ServicesInformer                coreinformers.ServiceInformer
 	IngressWrapper                  IngressWrapper
 	RolloutsInformer                informers.RolloutInformer
@@ -133,9 +134,12 @@ type reconcilerBase struct {
 
 	replicaSetLister              appslisters.ReplicaSetLister
 	replicaSetSynced              cache.InformerSynced
+	statefulSetLister             appslisters.StatefulSetLister
+	statefulSetSynced             cache.InformerSynced
 	rolloutsInformer              cache.SharedIndexInformer
 	rolloutsLister                listers.RolloutLister
 	replicaSetInformer            cache.SharedIndexInformer
+	statefulSetInformer           cache.SharedIndexInformer
 	rolloutsSynced                cache.InformerSynced
 	rolloutsIndexer               cache.Indexer
 	servicesLister                v1.ServiceLister
@@ -192,8 +196,11 @@ func NewController(cfg ControllerConfig) *Controller {
 		smiclientset:                  cfg.SmiClientSet,
 		replicaSetLister:              cfg.ReplicaSetInformer.Lister(),
 		replicaSetSynced:              cfg.ReplicaSetInformer.Informer().HasSynced,
+		statefulSetLister:             cfg.StatefulSetInformer.Lister(),
+		statefulSetSynced:             cfg.StatefulSetInformer.Informer().HasSynced,
 		rolloutsInformer:              cfg.RolloutsInformer.Informer(),
 		replicaSetInformer:            cfg.ReplicaSetInformer.Informer(),
+		statefulSetInformer:           cfg.StatefulSetInformer.Informer(),
 		rolloutsIndexer:               cfg.RolloutsInformer.Informer().GetIndexer(),
 		rolloutsLister:                cfg.RolloutsInformer.Lister(),
 		rolloutsSynced:                cfg.RolloutsInformer.Informer().HasSynced,

@@ -30,6 +30,19 @@ type rolloutContext struct {
 	// otherRSs are ReplicaSets which are neither new or stable (allRSs - newRS - stableRS)
 	otherRSs []*appsv1.ReplicaSet
 
+	// StatefulSet fields - similar to ReplicaSet fields above
+	// newSS is the "new" StatefulSet. Also referred to as current, or desired.
+	// newSS will be nil when the pod template spec changes.
+	newSS *appsv1.StatefulSet
+	// stableSS is the "stable" StatefulSet which will be scaled up upon an abort.
+	// stableSS will be nil when a Rollout is first deployed, and will be equal to newSS when fully promoted
+	stableSS *appsv1.StatefulSet
+	// allSSs are all the StatefulSets associated with the Rollout
+	allSSs []*appsv1.StatefulSet
+	// olderSSs are "older" StatefulSets -- anything which is not the newSS
+	// this includes the stableSS (when in the middle of an update)
+	olderSSs []*appsv1.StatefulSet
+
 	currentArs analysisutil.CurrentAnalysisRuns
 	otherArs   []*v1alpha1.AnalysisRun
 

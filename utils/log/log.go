@@ -8,6 +8,7 @@ import (
 	"github.com/bombsimon/logrusr/v4"
 
 	log "github.com/sirupsen/logrus"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
@@ -26,6 +27,8 @@ const (
 	ServiceKey = "service"
 	// IngressKey defines the key for the ingress field
 	IngressKey = "ingress"
+	// StatefulSetKey defines the key for the statefulset field
+	StatefulSetKey = "statefulset"
 	// NamespaceKey defines the key for the namespace field
 	NamespaceKey = "namespace"
 )
@@ -105,6 +108,11 @@ func WithExperiment(experiment *v1alpha1.Experiment) *log.Entry {
 // WithAnalysisRun returns a logging context for AnalysisRun
 func WithAnalysisRun(ar *v1alpha1.AnalysisRun) *log.Entry {
 	return log.WithField(AnalysisRunKey, ar.Name).WithField(NamespaceKey, ar.Namespace)
+}
+
+// WithStatefulSet returns a logging context for StatefulSet
+func WithStatefulSet(ss *appsv1.StatefulSet) *log.Entry {
+	return log.WithField(StatefulSetKey, ss.Name).WithField(NamespaceKey, ss.Namespace)
 }
 
 // WithRedactor returns a log entry with the inputted secret values redacted
